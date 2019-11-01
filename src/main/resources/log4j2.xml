@@ -3,7 +3,7 @@
 	<Properties>
 		<Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n
 		</Property>
-		<Property name="APP_LOG_ROOT">E:/temp</Property>
+		<Property name="APP_LOG_ROOT">E:/Jp/Work/Projects/SpringBoot/oec</Property>
 	</Properties>
 	<Appenders>
 		<Console name="console" target="SYSTEM_OUT">
@@ -11,8 +11,8 @@
 		</Console>
 
 		<RollingFile name="file"
-			fileName="${APP_LOG_ROOT}/oec/application.log"
-			filePattern="${APP_LOG_ROOT}/SpringBoot2App/application-%d{yyyy-MM-dd}-%i.log">
+			fileName="${APP_LOG_ROOT}/logs/oec.log"
+			filePattern="${APP_LOG_ROOT}/logs/oec-%d{yyyy-MM-dd}-%i.log">
 			<PatternLayout pattern="${LOG_PATTERN}" />
 			<Policies>
 				<SizeBasedTriggeringPolicy size="19500KB" />
@@ -23,8 +23,8 @@
 	</Appenders>
 	<Loggers>
 		<Root level="info">
-			<AppenderRef ref="console" />
-			<!-- <AppenderRef ref="file" /> -->
+			<!-- <AppenderRef ref="console" /> -->
+			<AppenderRef ref="file" />
 		</Root>
 	</Loggers>
 </Configuration>
