@@ -42,8 +42,9 @@ public class NoteController {
 	//=========================================================================
 	
 	@PostMapping("/notes")
-	public Note createNote(@Valid @RequestBody Note note) {
-		return noteRepository.save(note);
+	public ResponseEntity<Note> createNote(@Valid @RequestBody Note note) {
+		Note n = noteRepository.save(note);
+		return new ResponseEntity<Note>(n, new HttpHeaders(), HttpStatus.OK);
 	}
 	
 	//=========================================================================
