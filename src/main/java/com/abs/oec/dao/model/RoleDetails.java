@@ -3,7 +3,7 @@
 * @version 1.0
 * @since   01-Nov-2019 
 */
-package com.abs.oec.model;
+package com.abs.oec.dao.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

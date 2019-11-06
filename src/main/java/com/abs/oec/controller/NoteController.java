@@ -5,8 +5,8 @@
 */
 package com.abs.oec.controller;
 
+import com.abs.oec.dao.model.Note;
 import com.abs.oec.exception.ResourceNotFoundException;
-import com.abs.oec.model.Note;
 import com.abs.oec.repository.NoteRepository;
 
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-public class NoteController {
+public class NoteController extends BaseController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoteController.class);
 
 	@Autowired

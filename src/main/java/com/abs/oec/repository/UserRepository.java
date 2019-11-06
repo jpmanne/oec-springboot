@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.abs.oec.model.UserDetails;
+import com.abs.oec.dao.model.UserDetails;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserDetails, Long> {
