@@ -27,8 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.UserDetails;
-import com.abs.oec.exception.ResourceNotFoundException;
-import com.abs.oec.model.AutherizationDetails;
+import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
 import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.UserRepository;
@@ -50,15 +49,15 @@ public class UserController extends BaseController {
 	public ResponseEntity<Response> getAllUsers(@RequestParam("authCode") String authCode) {
 		String logTag = "getAllUsers() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = null;
+		AuthorizationDetails authorizationDetails = null;
 		List<UserDetails> users = null; 
 		Response response = null;
 		
 		try {
-			autherizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
 			
-			if(autherizationDetails.isValidAuthCode()) {
-				if(autherizationDetails.isValidAccess()) {
+			if(authorizationDetails.isValidAuthCode()) {
+				if(authorizationDetails.isValidAccess()) {
 					users = userRepository.findAll();
 					response = new Response("Users", users);
 				} else {
@@ -82,14 +81,14 @@ public class UserController extends BaseController {
 	public ResponseEntity<Response> addUser(@Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) {
 		String logTag = "addUser() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = null;
+		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			autherizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
 			
-			if(autherizationDetails.isValidAuthCode()) {
-				if(autherizationDetails.isValidAccess()) {
+			if(authorizationDetails.isValidAuthCode()) {
+				if(authorizationDetails.isValidAccess()) {
 					UserDetails ud = userRepository.save(userDetails);
 					response = new Response("User Added Successfully", ud);
 				} else {
@@ -113,14 +112,14 @@ public class UserController extends BaseController {
 	public ResponseEntity<Response> getUserById(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) {
 		String logTag = "getUserById() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = null;
+		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			autherizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
 			
-			if(autherizationDetails.isValidAuthCode()) {
-				if(autherizationDetails.isValidAccess()) {
+			if(authorizationDetails.isValidAuthCode()) {
+				if(authorizationDetails.isValidAccess()) {
 					Optional<UserDetails> userDetails = userRepository.findById(userDetailsId);
 					if(userDetails.isPresent()) {
 					    UserDetails existingUserDetails = userDetails.get();
@@ -150,27 +149,33 @@ public class UserController extends BaseController {
 	public /*UserDetails*/ResponseEntity<Response> updateUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) {
 		String logTag = "updateUser() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = null;
+		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			autherizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
 			
-			if(autherizationDetails.isValidAuthCode()) {
-				if(autherizationDetails.isValidAccess()) {
-					UserDetails user = userRepository.findById(userDetailsId).orElseThrow(() -> new ResourceNotFoundException("User", "userDetailsId", userDetailsId));
-					user.setFirstName(userDetails.getFirstName());
-					user.setLastName(userDetails.getLastName()); 
-					user.setMiddleName(userDetails.getMiddleName());
-					user.setEmail(userDetails.getEmail());
-					user.setPhoneNumber(userDetails.getPhoneNumber());
-					user.setAddressLine1(userDetails.getAddressLine1());
-					user.setAddressLine2(userDetails.getAddressLine2());
-					user.setCity(userDetails.getCity());
-					user.setState(userDetails.getState());
-					user.setCountry(userDetails.getCountry());
-					UserDetails updatedNote = userRepository.save(user);
-					response = new Response("Update User Successful", updatedNote);
+			if(authorizationDetails.isValidAuthCode()) {
+				if(authorizationDetails.isValidAccess()) {
+					//UserDetails user = userRepository.findById(userDetailsId).orElseThrow(() -> new ResourceNotFoundException("User", "userDetailsId", userDetailsId));
+					Optional<UserDetails> user = userRepository.findById(userDetailsId);
+					if(user.isPresent()) {
+					    UserDetails existingUser = user.get();
+					    existingUser.setFirstName(userDetails.getFirstName());
+					    existingUser.setLastName(userDetails.getLastName()); 
+					    existingUser.setMiddleName(userDetails.getMiddleName());
+					    existingUser.setEmail(userDetails.getEmail());
+					    existingUser.setPhoneNumber(userDetails.getPhoneNumber());
+					    existingUser.setAddressLine1(userDetails.getAddressLine1());
+					    existingUser.setAddressLine2(userDetails.getAddressLine2());
+					    existingUser.setCity(userDetails.getCity());
+					    existingUser.setState(userDetails.getState());
+					    existingUser.setCountry(userDetails.getCountry());
+						UserDetails updatedNote = userRepository.save(existingUser);
+						response = new Response("Update User Successful", updatedNote);
+					} else {
+						new Response("User not found with the userDetailsId :"+userDetailsId, null);
+					}
 				} else {
 					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
@@ -193,14 +198,14 @@ public class UserController extends BaseController {
 	public ResponseEntity<?> deleteUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) {
 		String logTag = "getUserById() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = null;
+		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			autherizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
 			
-			if(autherizationDetails.isValidAuthCode()) {
-				if(autherizationDetails.isValidAccess()) {
+			if(authorizationDetails.isValidAuthCode()) {
+				if(authorizationDetails.isValidAccess()) {
 					Optional<UserDetails> userDetails = userRepository.findById(userDetailsId);
 					if(userDetails.isPresent()) {
 					    UserDetails existingUserDetails = userDetails.get();

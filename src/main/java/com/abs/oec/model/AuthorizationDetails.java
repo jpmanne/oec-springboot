@@ -5,7 +5,7 @@
 */
 package com.abs.oec.model;
 
-public class AutherizationDetails {
+public class AuthorizationDetails {
 	private Long userDetailsId;
 	private String authCode;
 	private boolean validAuthCode;

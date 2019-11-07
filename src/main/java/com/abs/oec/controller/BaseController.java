@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.abs.oec.common.Constants;
 import com.abs.oec.dao.model.AuthCodeDetails;
-import com.abs.oec.model.AutherizationDetails;
+import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
 import com.abs.oec.repository.AuthCodeRepository;
 
@@ -21,10 +21,10 @@ public abstract class BaseController {
 	
 	//=========================================================================
 	
-	public AutherizationDetails validateAuthorization(AuthCodeRepository authCodeRepository, String authCode) {
+	public AuthorizationDetails validateAuthorization(AuthCodeRepository authCodeRepository, String authCode) {
 		String logTag = "validateAuthorization() ";
 		LOGGER.info(logTag + "START of the method");
-		AutherizationDetails autherizationDetails = new AutherizationDetails();
+		AuthorizationDetails authorizationDetails = new AuthorizationDetails();
 		
 		try {
 			List<AuthCodeDetails> authCodes = authCodeRepository.getAuthCodeDetailsByAuthCode(authCode); 
@@ -34,14 +34,14 @@ public abstract class BaseController {
 				} else {
 					AuthCodeDetails authCodeDetails = authCodes.get(0);
 					LOGGER.info(logTag + "AuthCode: " + authCodeDetails.getAuthCode());
-					autherizationDetails.setAuthCode(authCode);
-					autherizationDetails.setUserDetailsId(authCodeDetails.getUserDetails().getUserDetailsId()); 
+					authorizationDetails.setAuthCode(authCode);
+					authorizationDetails.setUserDetailsId(authCodeDetails.getUserDetails().getUserDetailsId()); 
 					
 					if(Constants.ACTIVE.equalsIgnoreCase(authCodeDetails.getStatus())) {
-						autherizationDetails.setValidAuthCode(true);
+						authorizationDetails.setValidAuthCode(true);
 						
 						//TODO: Need to check whether the user is valid authorization to access this api
-						autherizationDetails.setValidAccess(true); //This is temporary
+						authorizationDetails.setValidAccess(true); //This is temporary
 					}
 				}
 			}
@@ -49,7 +49,7 @@ public abstract class BaseController {
 			// TODO: handle exception
 		}
 		
-		return autherizationDetails;
+		return authorizationDetails;
 	}
 	
 	//=========================================================================
