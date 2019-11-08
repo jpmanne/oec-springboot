@@ -39,4 +39,10 @@ public class URLConstants {
 		public static final String GET_STUDENTS = "/{courseDetailsId}";
 		public static final String ADD_STUDENTS = "/add/all";
 	}
+	
+	public class StudentAttendance {
+		public static final String API_BASE = "/api/student/attendance";
+		public static final String GET_STUDENTS = "/{courseDetailsId}";
+		public static final String ADD_STUDENTS = "/add/all";
+	}
 }
