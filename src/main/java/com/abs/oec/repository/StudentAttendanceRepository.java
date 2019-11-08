@@ -6,11 +6,12 @@
 package com.abs.oec.repository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-//import org.springframework.data.jpa.repository.Query;
-//import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,13 +38,18 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
 	
 	//========================================================================
 	
-	/*@Query("select a from StudentAttendanceDetails a where a.rollNo = :rollNo")
-	List<StudentAttendanceDetails> getStudentsByRollNo(@Param("rollNo") String rollNo);
+	List<StudentAttendanceDetails> getStudentAttendanceByAttendanceDate(Date attendanceDate);
+	
+	/*
+	 * @Query("select sad from StudentAttendanceDetails sad,  where a.rollNo = :rollNo"
+	 * ) List<StudentAttendanceDetails>
+	 * getStudentsAttendanceByCourseDetailsId(@Param("rollNo") String rollNo);
+	 */
 	
 	//========================================================================
 	
 	@Query(value = "SELECT * FROM student_details a WHERE course_details_id = :courseDetailsId", nativeQuery = true)
-	List<StudentAttendanceDetails> getStudentsByCourseDetailsId(@Param("courseDetailsId") Long courseDetailsId);*/
+	List<StudentAttendanceDetails> getStudentsAttendanceByCourseDetailsId(@Param("courseDetailsId") Long courseDetailsId);
 	
 	
 	//========================================================================

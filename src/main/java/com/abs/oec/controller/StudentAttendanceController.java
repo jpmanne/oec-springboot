@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -40,45 +41,70 @@ public class StudentAttendanceController extends BaseController {
 	StudentAttendanceRepository studentAttendanceRepository;
 	
 	@Autowired
+	StudentRepository studentRepository;
+	
+	@Autowired
 	AuthCodeRepository authCodeRepository;
 
 	//=========================================================================
 	
-	/*@GetMapping(URLConstants.StudentAttendance.GET_STUDENTS)
-	public ResponseEntity<Response> getStudentsByCourseDetailsId(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode) {
-		String logTag = "getStudentsByCourseDetailsId() ";
+	@GetMapping(URLConstants.StudentAttendance.GET_STUDENTS_ATTENDANCE)
+	public ResponseEntity<Response> getStudentsAttendance(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode, @RequestParam("date") String date) {
+		String logTag = "getStudentsAttendance() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
-		List<StudentDetails> students = null; 
+		List<StudentAttendanceDetails> studentsAttendance = null;
+		List<StudentDetails> students = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
-			
-			if(authorizationDetails.isValidAuthCode()) {
-				if(authorizationDetails.isValidAccess()) {
-					students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
-					response = new Response("Students", students);
+			if(date != null && !date.isEmpty()) {
+				authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+				
+				if(authorizationDetails.isValidAuthCode()) {
+					if(authorizationDetails.isValidAccess()) {
+						studentsAttendance = studentAttendanceRepository.getStudentsAttendanceByCourseDetailsId(courseDetailsId);
+						if(studentsAttendance != null && !studentsAttendance.isEmpty()) {
+							response = new Response("StudentsAttendance", studentsAttendance);
+						} else {
+							// As no attendance was save on this date, getting the students for the courseDetailsId
+							students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
+							if(students != null && !students.isEmpty()) {
+								studentsAttendance = new ArrayList<StudentAttendanceDetails>(students.size());
+								for(StudentDetails studentDetails : students) {
+									StudentAttendanceDetails sad = new StudentAttendanceDetails();
+									sad.setStudentDetails(studentDetails);
+									studentsAttendance.add(sad);
+								}
+								response = new Response("StudentsAttendance", studentsAttendance);
+							} else {
+								//Need to send a message that no students available for the courseDetailsId
+							}
+						}
+					} else {
+						response = getUnAuthorizedAccessRespose();
+						LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					response = getInvalidAuthCodeRespose(authCode);
+					LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 				}
 			} else {
-				response = getInvalidAuthCodeRespose(authCode);
-				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
+				response = getInvalidInputRespose();
+				LOGGER.info(logTag + "Invalid Input ");
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-	}*/
+	}
 
 	//=========================================================================
 	
-	@PostMapping(URLConstants.StudentAttendance.ADD_STUDENTS)
-	public ResponseEntity<Response> addStudents(@Valid @RequestBody List<StudentAttendanceDetails> studentsAttendanceDetails, @RequestParam("authCode") String authCode) {
-		String logTag = "addStudents() ";
+	@PostMapping(URLConstants.StudentAttendance.SAVE_STUDENTS_ATTENDANCE)
+	public ResponseEntity<Response> saveStudentsAttendance(@Valid @RequestBody List<StudentAttendanceDetails> studentsAttendanceDetails, @RequestParam("authCode") String authCode) {
+		String logTag = "saveStudentsAttendance() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;

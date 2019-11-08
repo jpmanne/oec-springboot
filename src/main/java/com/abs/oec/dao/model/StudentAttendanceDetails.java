@@ -29,7 +29,7 @@ public class StudentAttendanceDetails {
 	
 	@OneToOne
 	@JoinColumn(name = "student_details_id")
-	private CourseDetails courseDetails;
+	private StudentDetails studentDetails;
 	
 	@Column(name = "attendance", length = 1, nullable = false)
 	private String attendance;
@@ -54,12 +54,12 @@ public class StudentAttendanceDetails {
 		this.createdAt = createdAt;
 	}
 
-	public CourseDetails getCourseDetails() {
-		return courseDetails;
+	public StudentDetails getStudentDetails() {
+		return studentDetails;
 	}
 
-	public void setCourseDetails(CourseDetails courseDetails) {
-		this.courseDetails = courseDetails;
+	public void setStudentDetails(StudentDetails studentDetails) {
+		this.studentDetails = studentDetails;
 	}
 
 	public String getAttendance() {

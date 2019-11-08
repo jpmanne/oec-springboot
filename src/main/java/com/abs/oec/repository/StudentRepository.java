@@ -6,6 +6,7 @@
 package com.abs.oec.repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,8 +38,8 @@ public interface StudentRepository extends JpaRepository<StudentDetails, Long> {
 	
 	//========================================================================
 	
-	@Query("select a from StudentDetails a where a.rollNo = :rollNo")
-	List<StudentDetails> getStudentsByRollNo(@Param("rollNo") String rollNo);
+	@Query("SELECT sd FROM StudentDetails sd WHERE sd.rollNo = :rollNo")
+	Collection<StudentDetails> getStudentsByRollNo(@Param("rollNo") String rollNo);
 	
 	//========================================================================
 	

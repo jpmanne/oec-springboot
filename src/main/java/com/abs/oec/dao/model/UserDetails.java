@@ -38,6 +38,7 @@ public class UserDetails {
 	private String lastName;
 
 	@Column(name = "date_of_birth", nullable = true)
+	@Temporal(TemporalType.DATE)
 	private Date dateOfBirth;
 	
 	@Column(name = "email", length = 150, nullable = false)

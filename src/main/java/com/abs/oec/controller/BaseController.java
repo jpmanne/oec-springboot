@@ -65,4 +65,10 @@ public abstract class BaseController {
 	}
 	
 	//=========================================================================
+	
+	public Response getInvalidInputRespose() {
+		return new Response("Invalid Input", null);
+	}
+	
+	//=========================================================================
 }

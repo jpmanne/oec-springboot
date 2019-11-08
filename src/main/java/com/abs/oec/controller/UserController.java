@@ -45,6 +45,8 @@ public class UserController extends BaseController {
 
 	//=========================================================================
 	
+	//List<UserDetails> usersByDateOfBirth = userRepository.getUsersByDateOfBirth(new SimpleDateFormat("yyyy-MM-dd").parse("2019-11-04"));
+	
 	@GetMapping(URLConstants.User.GET_ALL_USERS)
 	public ResponseEntity<Response> getAllUsers(@RequestParam("authCode") String authCode) {
 		String logTag = "getAllUsers() ";
@@ -121,11 +123,12 @@ public class UserController extends BaseController {
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					Optional<UserDetails> userDetails = userRepository.findById(userDetailsId);
+					
 					if(userDetails.isPresent()) {
 					    UserDetails existingUserDetails = userDetails.get();
 					    response = new Response("User Details", existingUserDetails);
 					} else {
-						new Response("User not found with the userDetailsId :"+userDetailsId, null);
+						response = new Response("User not found with the userDetailsId :"+userDetailsId, null);
 					}
 				} else {
 					response = getUnAuthorizedAccessRespose();
