@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,12 +64,24 @@ public class StudentAttendanceController extends BaseController {
 				
 				if(authorizationDetails.isValidAuthCode()) {
 					if(authorizationDetails.isValidAccess()) {
-						studentsAttendance = studentAttendanceRepository.getStudentsAttendanceByCourseDetailsId(courseDetailsId);
+						//studentsAttendance = studentAttendanceRepository.getStudentsAttendanceByCourseDetailsId(courseDetailsId);
+						//studentsAttendance = studentAttendanceRepository.getStudentAttendanceByAttendanceDate(new SimpleDateFormat("yyyy-MM-dd").parse(date));
+						students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
+						
+						if(students != null && !students.isEmpty()) {
+							List<Long> studentDetailsIds = new ArrayList<Long>(students.size());
+							for(StudentDetails studentDetails : students) {
+								studentDetailsIds.add(studentDetails.getStudentDetailsId());
+							}
+							studentsAttendance = studentAttendanceRepository.getStudentAttendance(studentDetailsIds, new SimpleDateFormat("yyyy-MM-dd").parse(date));
+						} else {
+							//Need to send a message that no students available for the courseDetailsId
+						}
 						if(studentsAttendance != null && !studentsAttendance.isEmpty()) {
 							response = new Response("StudentsAttendance", studentsAttendance);
 						} else {
 							// As no attendance was save on this date, getting the students for the courseDetailsId
-							students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
+							
 							if(students != null && !students.isEmpty()) {
 								studentsAttendance = new ArrayList<StudentAttendanceDetails>(students.size());
 								for(StudentDetails studentDetails : students) {

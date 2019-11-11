@@ -38,6 +38,11 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
 	
 	//========================================================================
 	
+	@Query( "select sad from StudentAttendanceDetails sad where sad.studentDetails.studentDetailsId in :studentDetailsIds and sad.attendanceDate = :attendanceDate" )
+	List<StudentAttendanceDetails> getStudentAttendance(@Param("studentDetailsIds") List<Long> studentDetailsIds, @Param("attendanceDate") Date attendanceDate);
+	
+	//========================================================================
+	
 	List<StudentAttendanceDetails> getStudentAttendanceByAttendanceDate(Date attendanceDate);
 	
 	/*
