@@ -10,7 +10,7 @@ public class Constants {
 	public static final String INACTIVE = "0";
 	
 	public static final String DATE_FORMAT = "MM-dd-yyyy";
-	public static final String DATE_FORMAT_DB = "YYYY-MM-DD";
+	public static final String DATE_FORMAT_DB = "yyyy-MM-dd";
 	public static final String DATE_FORMAT_UI_MM_DD_YYYY_HH_MM = "MM-dd-yyyy HH:mm";
 	public static final String DATE_FORMAT_UI = "MM-dd-yyyy hh:mm";
 

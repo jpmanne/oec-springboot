@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.StudentDetails;
+import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
-import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.StudentRepository;
 
 @RestController
@@ -37,13 +37,10 @@ public class StudentController extends BaseController {
 	@Autowired
 	StudentRepository studentRepository;
 	
-	@Autowired
-	AuthCodeRepository authCodeRepository;
-
 	//=========================================================================
 	
 	@GetMapping(URLConstants.Student.GET_STUDENTS)
-	public ResponseEntity<Response> getStudentsByCourseDetailsId(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> getStudentsByCourseDetailsId(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "getStudentsByCourseDetailsId() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
@@ -51,22 +48,23 @@ public class StudentController extends BaseController {
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
 					response = new Response("Students", students);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while getting the students by course details id, "+courseDetailsId;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -75,29 +73,30 @@ public class StudentController extends BaseController {
 	//=========================================================================
 	
 	@PostMapping(URLConstants.Student.ADD_STUDENTS)
-	public ResponseEntity<Response> addStudents(@Valid @RequestBody List<StudentDetails> students, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> addStudents(@Valid @RequestBody List<StudentDetails> students, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "addStudents() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
-					List<StudentDetails> students1 = studentRepository.save(students);
-					response = new Response("Students Added Successfully", students1);
+					List<StudentDetails> savedStudents = studentRepository.save(students);
+					response = new Response("Students Added Successfully", savedStudents);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while adding the students ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);

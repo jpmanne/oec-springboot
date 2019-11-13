@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,10 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.UserDetails;
+import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
-import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.UserRepository;
+import com.abs.oec.response.model.WebUserDetails;
 
 @RestController
 @RequestMapping(URLConstants.User.API_BASE)
@@ -39,39 +41,43 @@ public class UserController extends BaseController {
 
 	@Autowired
 	UserRepository userRepository;
-	
-	@Autowired
-	AuthCodeRepository authCodeRepository;
 
 	//=========================================================================
 	
-	//List<UserDetails> usersByDateOfBirth = userRepository.getUsersByDateOfBirth(new SimpleDateFormat("yyyy-MM-dd").parse("2019-11-04"));
-	
 	@GetMapping(URLConstants.User.GET_ALL_USERS)
-	public ResponseEntity<Response> getAllUsers(@RequestParam("authCode") String authCode) {
-		String logTag = "getAllUsers() ";
+	public ResponseEntity<Response> getAllUsers(@RequestParam("authCode") String authCode) throws OECException {
+		String logTag = "getAllUsers() :";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		List<UserDetails> users = null; 
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					users = userRepository.findAll();
-					response = new Response("Users", users);
+					if(users != null && !users.isEmpty()) {
+						List<WebUserDetails> webUsers = new ArrayList<WebUserDetails>(users.size());
+						for (UserDetails userDetails : users) {
+							webUsers.add(userDetails.getWebUser());
+						}
+						response = new Response("Users", webUsers);
+					} else {
+						response = new Response("Users not found", null);
+					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while retrieving all the users";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails); 
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -80,29 +86,34 @@ public class UserController extends BaseController {
 	//=========================================================================
 	
 	@PostMapping(URLConstants.User.ADD_USER)
-	public ResponseEntity<Response> addUser(@Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) {
-		String logTag = "addUser() ";
+	public ResponseEntity<Response> addUser(@Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) throws OECException {
+		String logTag = "addUser() :";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					UserDetails ud = userRepository.save(userDetails);
-					response = new Response("User Added Successfully", ud);
+					if(ud != null && ud.getUserDetailsId() != null) {
+						response = new Response("User Added Successfully", ud.getWebUser());
+					} else {
+						response = new Response("User Adding Failure", null);
+					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while adding the user ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -111,14 +122,14 @@ public class UserController extends BaseController {
 	//=========================================================================
 
 	@GetMapping(URLConstants.User.GET_USER)
-	public ResponseEntity<Response> getUserById(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) {
-		String logTag = "getUserById() ";
+	public ResponseEntity<Response> getUserById(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) throws OECException {
+		String logTag = "getUserById() :";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
@@ -126,43 +137,43 @@ public class UserController extends BaseController {
 					
 					if(userDetails.isPresent()) {
 					    UserDetails existingUserDetails = userDetails.get();
-					    response = new Response("User Details", existingUserDetails);
+					    response = new Response("User Details", existingUserDetails.getWebUser());
 					} else {
 						response = new Response("User not found with the userDetailsId :"+userDetailsId, null);
 					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while retrieving the user, "+userDetailsId;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
-		//return userRepository.findById(userDetailsId).orElseThrow(() -> new ResourceNotFoundException("User", "userDetailsId", userDetailsId));
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 	
 	//=========================================================================
 
 	@PutMapping(URLConstants.User.UPDATE_USER)
-	public /*UserDetails*/ResponseEntity<Response> updateUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) {
-		String logTag = "updateUser() ";
+	public ResponseEntity<Response> updateUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @Valid @RequestBody UserDetails userDetails, @RequestParam("authCode") String authCode) throws OECException {
+		String logTag = "updateUser() :";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
-					//UserDetails user = userRepository.findById(userDetailsId).orElseThrow(() -> new ResourceNotFoundException("User", "userDetailsId", userDetailsId));
 					Optional<UserDetails> user = userRepository.findById(userDetailsId);
-					if(user.isPresent()) {
+					
+					if(user != null && user.isPresent()) {
 					    UserDetails existingUser = user.get();
 					    existingUser.setFirstName(userDetails.getFirstName());
 					    existingUser.setLastName(userDetails.getLastName()); 
@@ -174,38 +185,38 @@ public class UserController extends BaseController {
 					    existingUser.setCity(userDetails.getCity());
 					    existingUser.setState(userDetails.getState());
 					    existingUser.setCountry(userDetails.getCountry());
-						UserDetails updatedNote = userRepository.save(existingUser);
-						response = new Response("Update User Successful", updatedNote);
+						UserDetails updatedUserDetails = userRepository.save(existingUser);
+						response = new Response("Update User Successful", updatedUserDetails.getWebUser());
 					} else {
 						new Response("User not found with the userDetailsId :"+userDetailsId, null);
 					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while updating the user, "+userDetailsId;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
-		//return updatedNote;
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
 	//=========================================================================
 	
 	@DeleteMapping(URLConstants.User.DELETE_USER)
-	public ResponseEntity<?> deleteUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) {
-		String logTag = "getUserById() ";
+	public ResponseEntity<Response> deleteUser(@PathVariable(value = "userDetailsId") Long userDetailsId, @RequestParam("authCode") String authCode) throws OECException {
+		String logTag = "getUserById() :";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
@@ -213,25 +224,25 @@ public class UserController extends BaseController {
 					if(userDetails.isPresent()) {
 					    UserDetails existingUserDetails = userDetails.get();
 					    userRepository.delete(existingUserDetails);
+					    response = new Response("User Delete Successful", null);
 					} else {
-						new Response("User not found with the userDetailsId :"+userDetailsId, null);
+						response = new Response("User not found with the userDetailsId :"+userDetailsId, null);
 					}
-					response = new Response("User Delete Successful", null);
-				} else {
-					response = getUnAuthorizedAccessRespose();
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					
+				} else {
+					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while deleting the user "+userDetailsId;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-		//return ResponseEntity.ok().build();
 	}
 	
 	//=========================================================================

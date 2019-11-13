@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -24,10 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.TopicDetails;
+import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
-import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.TopicRepository;
+import com.abs.oec.response.model.WebTopicDetails;
 
 @RestController
 @RequestMapping(URLConstants.Topic.API_BASE)
@@ -37,13 +39,10 @@ public class TopicController extends BaseController {
 	@Autowired
 	TopicRepository topicRepository;
 	
-	@Autowired
-	AuthCodeRepository authCodeRepository;
-
 	//=========================================================================
 	
 	@GetMapping(URLConstants.Topic.GET_TOPICS)
-	public ResponseEntity<Response> getTopicsByUnit(@PathVariable(value = "unitId") Long unitId, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> getTopicsByUnit(@PathVariable(value = "unitId") Long unitId, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "getTopicsByUnit() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
@@ -51,22 +50,32 @@ public class TopicController extends BaseController {
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					topics = topicRepository.getTopicsByUnitId(unitId);
-					response = new Response("Topics", topics);
+					
+					if(topics != null && !topics.isEmpty()) {
+						List<WebTopicDetails> webTopics = new ArrayList<WebTopicDetails>(topics.size());
+						for (TopicDetails topicDetails : topics) {
+							webTopics.add(topicDetails.getWebTopicDetails());
+						}
+						response = new Response("Topics", webTopics);
+					} else {
+						response = new Response("Topics not found", null);
+					}
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while getting the topics by unit, "+unitId;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -75,29 +84,30 @@ public class TopicController extends BaseController {
 	//=========================================================================
 	
 	@PostMapping(URLConstants.Topic.ADD_TOPICS)
-	public ResponseEntity<Response> addTopics(@Valid @RequestBody List<TopicDetails> topics, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> addTopics(@Valid @RequestBody List<TopicDetails> topics, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "addTopics() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
-					List<TopicDetails> topics1 = topicRepository.save(topics);
-					response = new Response("Topics Added Successfully", topics1);
+					topicRepository.save(topics);
+					response = new Response("Topics Added Successfully", null);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while adding the Topics ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);

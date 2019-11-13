@@ -24,12 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.abs.oec.common.Constants;
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.StudentAttendanceDetails;
 import com.abs.oec.dao.model.StudentDetails;
+import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
-import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.StudentAttendanceRepository;
 import com.abs.oec.repository.StudentRepository;
 
@@ -44,13 +45,10 @@ public class StudentAttendanceController extends BaseController {
 	@Autowired
 	StudentRepository studentRepository;
 	
-	@Autowired
-	AuthCodeRepository authCodeRepository;
-
 	//=========================================================================
 	
 	@GetMapping(URLConstants.StudentAttendance.GET_STUDENTS_ATTENDANCE)
-	public ResponseEntity<Response> getStudentsAttendance(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode, @RequestParam("date") String date) {
+	public ResponseEntity<Response> getStudentsAttendance(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode, @RequestParam("date") String date) throws OECException {
 		String logTag = "getStudentsAttendance() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
@@ -60,12 +58,10 @@ public class StudentAttendanceController extends BaseController {
 		
 		try {
 			if(date != null && !date.isEmpty()) {
-				authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+				authorizationDetails = validateAuthorization(authCode);
 				
 				if(authorizationDetails.isValidAuthCode()) {
 					if(authorizationDetails.isValidAccess()) {
-						//studentsAttendance = studentAttendanceRepository.getStudentsAttendanceByCourseDetailsId(courseDetailsId);
-						//studentsAttendance = studentAttendanceRepository.getStudentAttendanceByAttendanceDate(new SimpleDateFormat("yyyy-MM-dd").parse(date));
 						students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
 						
 						if(students != null && !students.isEmpty()) {
@@ -73,15 +69,14 @@ public class StudentAttendanceController extends BaseController {
 							for(StudentDetails studentDetails : students) {
 								studentDetailsIds.add(studentDetails.getStudentDetailsId());
 							}
-							studentsAttendance = studentAttendanceRepository.getStudentAttendance(studentDetailsIds, new SimpleDateFormat("yyyy-MM-dd").parse(date));
+							studentsAttendance = studentAttendanceRepository.getStudentAttendance(studentDetailsIds, new SimpleDateFormat(Constants.DATE_FORMAT_DB).parse(date));
 						} else {
 							//Need to send a message that no students available for the courseDetailsId
 						}
 						if(studentsAttendance != null && !studentsAttendance.isEmpty()) {
 							response = new Response("StudentsAttendance", studentsAttendance);
 						} else {
-							// As no attendance was save on this date, getting the students for the courseDetailsId
-							
+							// As no attendance was save on this date, building the new StudentAttendanceDetails
 							if(students != null && !students.isEmpty()) {
 								studentsAttendance = new ArrayList<StudentAttendanceDetails>(students.size());
 								for(StudentDetails studentDetails : students) {
@@ -91,12 +86,12 @@ public class StudentAttendanceController extends BaseController {
 								}
 								response = new Response("StudentsAttendance", studentsAttendance);
 							} else {
-								//Need to send a message that no students available for the courseDetailsId
+								//TODO: Need to send a message that no students available for the courseDetailsId
 							}
 						}
 					} else {
-						response = getUnAuthorizedAccessRespose();
 						LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+						return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 					}
 				} else {
 					response = getInvalidAuthCodeRespose(authCode);
@@ -107,7 +102,8 @@ public class StudentAttendanceController extends BaseController {
 				LOGGER.info(logTag + "Invalid Input ");
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while getting the students attendance ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -116,29 +112,30 @@ public class StudentAttendanceController extends BaseController {
 	//=========================================================================
 	
 	@PostMapping(URLConstants.StudentAttendance.SAVE_STUDENTS_ATTENDANCE)
-	public ResponseEntity<Response> saveStudentsAttendance(@Valid @RequestBody List<StudentAttendanceDetails> studentsAttendanceDetails, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> saveStudentsAttendance(@Valid @RequestBody List<StudentAttendanceDetails> studentsAttendanceDetails, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "saveStudentsAttendance() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
-					List<StudentAttendanceDetails> students1 = studentAttendanceRepository.save(studentsAttendanceDetails);
-					response = new Response("Students Attendance saved Successfully", students1);
+					List<StudentAttendanceDetails> savedStudentsAttendance = studentAttendanceRepository.save(studentsAttendanceDetails);
+					response = new Response("Students Attendance saved Successfully", savedStudentsAttendance);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while adding the students attendance ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);

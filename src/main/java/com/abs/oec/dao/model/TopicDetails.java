@@ -5,6 +5,7 @@
 */
 package com.abs.oec.dao.model;
 
+import com.abs.oec.response.model.WebTopicDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -63,5 +64,13 @@ public class TopicDetails {
 
 	public void setUnitId(Long unitId) {
 		this.unitId = unitId;
+	}
+	
+	public WebTopicDetails getWebTopicDetails() {
+		WebTopicDetails webTopicDetails = new WebTopicDetails();
+		webTopicDetails.setTopicDetailsId(topicDetailsId);
+		webTopicDetails.setTopic(topic);
+		webTopicDetails.setUnitId(unitId);
+		return webTopicDetails;
 	}
 }

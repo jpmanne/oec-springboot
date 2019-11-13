@@ -5,11 +5,15 @@
 */
 package com.abs.oec.dao.model;
 
+import com.abs.oec.common.Constants;
+import com.abs.oec.response.model.WebUserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
@@ -219,5 +223,27 @@ public class UserDetails {
 
 	public void setRoleDetails(RoleDetails roleDetails) {
 		this.roleDetails = roleDetails;
+	}
+	
+	public WebUserDetails getWebUser() {
+		WebUserDetails webUser = new WebUserDetails();
+		webUser.setUserDetailsId(userDetailsId);
+		webUser.setFirstName(firstName);
+		webUser.setMiddleName(middleName);
+		webUser.setLastName(lastName);
+		if(dateOfBirth != null) {
+			webUser.setDateOfBirth(new SimpleDateFormat(Constants.DATE_FORMAT).format(dateOfBirth));
+		}
+		webUser.setPhoneNumber(phoneNumber);
+		webUser.setEmail(email);
+		webUser.setStatus(status);
+		webUser.setAddressLine1(addressLine1);
+		webUser.setAddressLine2(addressLine2);
+		webUser.setCountry(country);
+		webUser.setState(state);
+		webUser.setCity(city);
+		webUser.setPostalCode(postalCode);
+		webUser.setRoleId(roleDetails.getRoleId());
+		return webUser;
 	}
 }

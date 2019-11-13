@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abs.oec.common.URLConstants;
 import com.abs.oec.dao.model.CourseDetails;
+import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
-import com.abs.oec.repository.AuthCodeRepository;
 import com.abs.oec.repository.CourseRepository;
 
 @RestController
@@ -37,13 +37,10 @@ public class CourseController extends BaseController {
 	@Autowired
 	CourseRepository courseRepository;
 	
-	@Autowired
-	AuthCodeRepository authCodeRepository;
-
 	//=========================================================================
 	
 	@GetMapping(URLConstants.Course.GET_COURSES)
-	public ResponseEntity<Response> getCoursesByCourseCode(@PathVariable(value = "courseCode") String courseCode, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> getCoursesByCourseCode(@PathVariable(value = "courseCode") String courseCode, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "getCoursesByCourseCode() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
@@ -51,22 +48,23 @@ public class CourseController extends BaseController {
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					courses = courseRepository.getCoursesByCourseCode(courseCode);
 					response = new Response("Courses", courses);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while getting the courses by courseCode, "+courseCode;
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -75,29 +73,30 @@ public class CourseController extends BaseController {
 	//=========================================================================
 	
 	@PostMapping(URLConstants.Course.ADD_COURSES)
-	public ResponseEntity<Response> addCourses(@Valid @RequestBody List<CourseDetails> courses, @RequestParam("authCode") String authCode) {
+	public ResponseEntity<Response> addCourses(@Valid @RequestBody List<CourseDetails> courses, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "addCourses() ";
 		LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
 		try {
-			authorizationDetails = validateAuthorization(authCodeRepository, authCode);
+			authorizationDetails = validateAuthorization(authCode);
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					List<CourseDetails> courses1 = courseRepository.save(courses);
 					response = new Response("Courses Added Successfully", courses1);
 				} else {
-					response = getUnAuthorizedAccessRespose();
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
 				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			String exceptionMessage = logTag + "Exception while adding the courses ";
+			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
 		}
 		LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
