@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.abs.oec.dao.model.ExceptionDetails;
+import com.abs.oec.email.EmailUtil;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.repository.ExceptionRepository;
 
@@ -25,13 +26,13 @@ public class OECException extends Exception {
 	
 	public OECException(ExceptionRepository exceptionRepository, String activity, String message, Throwable cause, AuthorizationDetails authorizationDetails) {
 		super();
-		saveExceptionDetails(exceptionRepository, activity, message, cause, authorizationDetails); 
+		processException(exceptionRepository, activity, message, cause, authorizationDetails); 
 	} 
 	
 	//=========================================================================
 	
-	private void saveExceptionDetails(ExceptionRepository exceptionRepository, String activity, String message, Throwable cause, AuthorizationDetails authorizationDetails) {
-		String logTag = "saveExceptionDetails() :";
+	private void processException(ExceptionRepository exceptionRepository, String activity, String message, Throwable cause, AuthorizationDetails authorizationDetails) {
+		String logTag = "processException() :";
 		LOGGER.info(logTag + "START of the method");
 		String exceptionType = null;
 		String exceptionMessage = null;
@@ -67,14 +68,21 @@ public class OECException extends Exception {
 				exceptionDetails.setUserDetailsId(authorizationDetails.getUserDetailsId()); 
 			}
 			exceptionDetails = exceptionRepository.save(exceptionDetails);
+			
+			if(exceptionDetails != null && exceptionDetails.getExceptionDetailsId() != null) {
+				EmailUtil.getInstance().notifyException(exceptionDetails.getExceptionMessage(), exceptionCause); 
+			}
 		} catch (Exception e) {
 			LOGGER.error(logTag + " Problem saving the exception details. "+e);
 		}
 		LOGGER.info(logTag + "END of the method");
 	}
 	
+	//=========================================================================
 	
-	
+	public void notifyException() {
+		
+	}
 	
 	//=========================================================================
 }

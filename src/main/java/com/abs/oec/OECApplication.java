@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class OECApplication {
+public class OECApplication /*extends SpringBootServletInitializer*/ {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OECApplication.class);
 	
 	//=========================================================================
@@ -23,6 +23,13 @@ public class OECApplication {
 		//LOGGER.info("Simple log statement with inputs {}, {} and {}", 1,2,3);
 		LOGGER.info("Start of the OECApplication............... ");
 	}
+	
+	//=========================================================================
+	
+	/*@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(OECApplication.class);
+	}*/
 	
 	//=========================================================================
 }
