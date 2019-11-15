@@ -5,6 +5,7 @@
 */
 package com.abs.oec.dao.model;
 
+import com.abs.oec.response.model.WebStudentDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -86,5 +87,16 @@ public class StudentDetails {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	public WebStudentDetails getWebStudentDetails() {
+		WebStudentDetails webStudentDetails = new WebStudentDetails();
+		webStudentDetails.setRollNo(rollNo);
+		webStudentDetails.setStudentDetailsId(studentDetailsId);
+		webStudentDetails.setStudentName(studentName);
+		if(courseDetails != null) {
+			webStudentDetails.setCourseDetails(courseDetails.getWebCourseDetails());
+		}
+		return webStudentDetails;
 	}
 }

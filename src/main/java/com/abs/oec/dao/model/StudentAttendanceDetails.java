@@ -5,11 +5,15 @@
 */
 package com.abs.oec.dao.model;
 
+import com.abs.oec.common.Constants;
+import com.abs.oec.response.model.WebStudentAttendanceDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Entity
@@ -76,5 +80,18 @@ public class StudentAttendanceDetails {
 
 	public void setAttendanceDate(Date attendanceDate) {
 		this.attendanceDate = attendanceDate;
+	}
+	
+	public WebStudentAttendanceDetails getWebStudentAttendanceDetails() {
+		WebStudentAttendanceDetails webStudentAttendanceDetails = new WebStudentAttendanceDetails();
+		webStudentAttendanceDetails.setAttendance(attendance);
+		webStudentAttendanceDetails.setStudentAttendanceDetailsId(studentAttendanceDetailsId);
+		if(studentDetails != null) {
+			webStudentAttendanceDetails.setStudentDetails(studentDetails.getWebStudentDetails());
+		}
+		if(attendanceDate != null) {
+			webStudentAttendanceDetails.setAttendanceDate(new SimpleDateFormat(Constants.DATE_FORMAT).format(attendanceDate));
+		}
+		return webStudentAttendanceDetails;
 	}
 }

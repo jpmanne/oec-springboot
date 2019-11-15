@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -28,6 +29,7 @@ import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
 import com.abs.oec.repository.StudentRepository;
+import com.abs.oec.response.model.WebStudentDetails;
 
 @RestController
 @RequestMapping(URLConstants.Student.API_BASE)
@@ -53,7 +55,15 @@ public class StudentController extends BaseController {
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					students = studentRepository.getStudentsByCourseDetailsId(courseDetailsId);
-					response = new Response("Students", students);
+					List<WebStudentDetails> webStudents = new ArrayList<WebStudentDetails>();
+					if(students != null && !students.isEmpty()) {
+						for (StudentDetails studentDetails : students) {
+							webStudents.add(studentDetails.getWebStudentDetails());
+						}
+						response = new Response("Students", webStudents);
+					} else {
+						response = new Response("Students not found", null);
+					}
 				} else {
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
@@ -85,7 +95,13 @@ public class StudentController extends BaseController {
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					List<StudentDetails> savedStudents = studentRepository.save(students);
-					response = new Response("Students Added Successfully", savedStudents);
+					if(savedStudents != null && !savedStudents.isEmpty()) {
+						List<WebStudentDetails> webStudents = new ArrayList<WebStudentDetails>();
+						for (StudentDetails studentDetails : savedStudents) {
+							webStudents.add(studentDetails.getWebStudentDetails());
+						}
+						response = new Response("Students Added Successfully", webStudents);
+					} 
 				} else {
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);

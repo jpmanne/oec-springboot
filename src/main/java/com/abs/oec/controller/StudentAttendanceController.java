@@ -7,6 +7,7 @@ package com.abs.oec.controller;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -33,6 +34,7 @@ import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
 import com.abs.oec.repository.StudentAttendanceRepository;
 import com.abs.oec.repository.StudentRepository;
+import com.abs.oec.response.model.WebStudentAttendanceDetails;
 
 @RestController
 @RequestMapping(URLConstants.StudentAttendance.API_BASE)
@@ -69,25 +71,26 @@ public class StudentAttendanceController extends BaseController {
 							for(StudentDetails studentDetails : students) {
 								studentDetailsIds.add(studentDetails.getStudentDetailsId());
 							}
-							studentsAttendance = studentAttendanceRepository.getStudentAttendance(studentDetailsIds, new SimpleDateFormat(Constants.DATE_FORMAT_DB).parse(date));
-						} else {
-							//Need to send a message that no students available for the courseDetailsId
-						}
-						if(studentsAttendance != null && !studentsAttendance.isEmpty()) {
-							response = new Response("StudentsAttendance", studentsAttendance);
-						} else {
-							// As no attendance was save on this date, building the new StudentAttendanceDetails
-							if(students != null && !students.isEmpty()) {
+							Date attendanceDate = new SimpleDateFormat(Constants.DATE_FORMAT_DB).parse(date);
+							studentsAttendance = studentAttendanceRepository.getStudentAttendance(studentDetailsIds, attendanceDate);
+							
+							if(studentsAttendance == null || studentsAttendance.isEmpty()) {
+								LOGGER.info(logTag + "As the student attendance is null of empty populating the default student attendance details");
 								studentsAttendance = new ArrayList<StudentAttendanceDetails>(students.size());
 								for(StudentDetails studentDetails : students) {
 									StudentAttendanceDetails sad = new StudentAttendanceDetails();
 									sad.setStudentDetails(studentDetails);
 									studentsAttendance.add(sad);
 								}
-								response = new Response("StudentsAttendance", studentsAttendance);
-							} else {
-								//TODO: Need to send a message that no students available for the courseDetailsId
 							}
+							List<WebStudentAttendanceDetails> webStudentsAttendance = new ArrayList<WebStudentAttendanceDetails>();
+							for (StudentAttendanceDetails studentAttendanceDetails : studentsAttendance) {
+								webStudentsAttendance.add(studentAttendanceDetails.getWebStudentAttendanceDetails());
+							}
+							response = new Response("StudentsAttendance", webStudentsAttendance);
+							
+						} else {
+							response = new Response("No Students found for the courseDetailsId :"+courseDetailsId, null);
 						}
 					} else {
 						LOGGER.info(logTag + "Unauthorized Access : "+authCode);
@@ -124,7 +127,16 @@ public class StudentAttendanceController extends BaseController {
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					List<StudentAttendanceDetails> savedStudentsAttendance = studentAttendanceRepository.save(studentsAttendanceDetails);
-					response = new Response("Students Attendance saved Successfully", savedStudentsAttendance);
+					
+					if(savedStudentsAttendance != null && !savedStudentsAttendance.isEmpty()) {
+						List<WebStudentAttendanceDetails> webStudentsAttendance = new ArrayList<WebStudentAttendanceDetails>();
+						for (StudentAttendanceDetails studentAttendanceDetails : savedStudentsAttendance) {
+							webStudentsAttendance.add(studentAttendanceDetails.getWebStudentAttendanceDetails());
+						}
+						response = new Response("Students Attendance saved Successfully", webStudentsAttendance);
+					} else {
+						response = new Response("Students Attendance saving failed", null);
+					}
 				} else {
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);

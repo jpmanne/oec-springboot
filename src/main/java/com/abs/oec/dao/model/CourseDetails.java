@@ -5,6 +5,7 @@
 */
 package com.abs.oec.dao.model;
 
+import com.abs.oec.response.model.WebCourseDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -74,5 +75,14 @@ public class CourseDetails {
 
 	public void setSemester(String semester) {
 		this.semester = semester;
+	}
+	
+	public WebCourseDetails getWebCourseDetails() {
+		WebCourseDetails webCourseDetails = new WebCourseDetails();
+		webCourseDetails.setCourseDetailsId(courseDetailsId);
+		webCourseDetails.setCourseCode(courseCode);
+		webCourseDetails.setCourseName(courseName);
+		webCourseDetails.setSemester(semester);
+		return webCourseDetails;
 	}
 }

@@ -5,6 +5,7 @@
 */
 package com.abs.oec.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -28,6 +29,7 @@ import com.abs.oec.exception.OECException;
 import com.abs.oec.model.AuthorizationDetails;
 import com.abs.oec.model.Response;
 import com.abs.oec.repository.CourseRepository;
+import com.abs.oec.response.model.WebCourseDetails;
 
 @RestController
 @RequestMapping(URLConstants.Course.API_BASE)
@@ -53,7 +55,16 @@ public class CourseController extends BaseController {
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
 					courses = courseRepository.getCoursesByCourseCode(courseCode);
-					response = new Response("Courses", courses);
+					List<WebCourseDetails> webCourses = null;
+					if(courses != null && !courses.isEmpty()) {
+						webCourses = new ArrayList<WebCourseDetails>();
+						for (CourseDetails courseDetails : courses) {
+							webCourses.add(courseDetails.getWebCourseDetails());
+						}
+						response = new Response("Courses", webCourses);
+					} else {
+						response = new Response("Courses not found for the courseCode:"+courseCode, webCourses);
+					}
 				} else {
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
@@ -84,8 +95,17 @@ public class CourseController extends BaseController {
 			
 			if(authorizationDetails.isValidAuthCode()) {
 				if(authorizationDetails.isValidAccess()) {
-					List<CourseDetails> courses1 = courseRepository.save(courses);
-					response = new Response("Courses Added Successfully", courses1);
+					List<CourseDetails> addedCourses = courseRepository.save(courses);
+					List<WebCourseDetails> webCourses = null;
+					if(addedCourses != null && !addedCourses.isEmpty()) {
+						webCourses = new ArrayList<WebCourseDetails>();
+						for (CourseDetails courseDetails : addedCourses) {
+							webCourses.add(courseDetails.getWebCourseDetails());
+						}
+						response = new Response("Courses Added Successfully", webCourses);
+					} else {
+						response = new Response("Adding courses failed", webCourses);
+					}
 				} else {
 					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
