@@ -8,10 +8,11 @@ package com.abs.oec.controller;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ import com.abs.oec.util.AuthCodeGenerator;
 @RestController
 @RequestMapping(URLConstants.Login.API_BASE)
 public class LoginController extends BaseController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
 
 	@Autowired
 	AuthCodeRepository authCodeRepository;
@@ -43,12 +44,15 @@ public class LoginController extends BaseController {
 	@Autowired
 	UserRepository userRepository;
 	
+	@Autowired(required = true)
+	private HttpServletRequest  request;
+	
 	//=========================================================================
 	
 	@PostMapping(URLConstants.Login.LOGIN_USER)
 	public ResponseEntity<Response> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
 		String logTag = "loginUser() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		AuthCodeDetails authCodeDetails = null;
 		LoginResponse loginResponse = null;
 		String message = null;
@@ -68,6 +72,7 @@ public class LoginController extends BaseController {
 					authCodeDetails.setLoginTime(new Date());
 					authCodeDetails.setLogoutTime(new Date());
 					authCodeDetails.setStatus(Constants.ACTIVE);
+					authCodeDetails.setIpAddress(request.getRemoteAddr());
 					authCodeDetails = authCodeRepository.save(authCodeDetails);
 					loginResponse = new LoginResponse();
 					loginResponse.setAuthCode(authCodeDetails.getAuthCode());
@@ -84,7 +89,7 @@ public class LoginController extends BaseController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(new Response(message, loginResponse), HttpStatus.OK);
 	}
 	
@@ -93,7 +98,7 @@ public class LoginController extends BaseController {
 	@PostMapping(URLConstants.Login.LOGOUT_USER)
 	public ResponseEntity<Response> logoutUser(@Valid @RequestBody LogoutRequest logoutRequest) {
 		String logTag = "logoutUser() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		String message = null;
 		
 		List<AuthCodeDetails> authCodes = authCodeRepository.getAuthCodeDetailsByAuthCode(logoutRequest.getAuthCode(), logoutRequest.getUserDetailsId());
@@ -102,7 +107,7 @@ public class LoginController extends BaseController {
 				//TODO: Need to throw and error as multiple entries having same authCode
 			} else {
 				AuthCodeDetails authCodeDetails = authCodes.get(0);
-				LOGGER.info(logTag + "AuthCode: " + authCodeDetails.getAuthCode());
+				//LOGGER.info(logTag + "AuthCode: " + authCodeDetails.getAuthCode());
 				authCodeDetails.setLogoutTime(new Date());
 				authCodeDetails.setStatus(Constants.INACTIVE);
 				authCodeRepository.save(authCodeDetails);
@@ -111,7 +116,7 @@ public class LoginController extends BaseController {
 		} else {
 			message = "Invalid AuthCode";
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(new Response(message, null), HttpStatus.OK);
 	}
 	

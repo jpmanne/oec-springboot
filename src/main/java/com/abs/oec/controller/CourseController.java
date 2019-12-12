@@ -10,8 +10,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ import com.abs.oec.response.model.WebCourseDetails;
 @RestController
 @RequestMapping(URLConstants.Course.API_BASE)
 public class CourseController extends BaseController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CourseController.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(CourseController.class);
 	
 	@Autowired
 	CourseRepository courseRepository;
@@ -44,7 +44,7 @@ public class CourseController extends BaseController {
 	@GetMapping(URLConstants.Course.GET_COURSES)
 	public ResponseEntity<Response> getCoursesByCourseCode(@PathVariable(value = "courseCode") String courseCode, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "getCoursesByCourseCode() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		List<CourseDetails> courses = null; 
 		Response response = null;
@@ -66,18 +66,18 @@ public class CourseController extends BaseController {
 						response = new Response("Courses not found for the courseCode:"+courseCode, webCourses);
 					}
 				} else {
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					//LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
-				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
+				//LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
 			String exceptionMessage = logTag + "Exception while getting the courses by courseCode, "+courseCode;
-			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
+			handleException(/*LOGGER,*/ logTag, exceptionMessage, e, authorizationDetails);
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
@@ -86,7 +86,7 @@ public class CourseController extends BaseController {
 	@PostMapping(URLConstants.Course.ADD_COURSES)
 	public ResponseEntity<Response> addCourses(@Valid @RequestBody List<CourseDetails> courses, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "addCourses() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
@@ -107,18 +107,18 @@ public class CourseController extends BaseController {
 						response = new Response("Adding courses failed", webCourses);
 					}
 				} else {
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					//LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
-				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
+				//LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
 			String exceptionMessage = logTag + "Exception while adding the courses ";
-			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
+			handleException(/*LOGGER,*/ logTag, exceptionMessage, e, authorizationDetails);
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 	

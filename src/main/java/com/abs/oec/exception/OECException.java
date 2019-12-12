@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import com.abs.oec.dao.model.ExceptionDetails;
 import com.abs.oec.email.EmailUtil;
@@ -19,7 +19,7 @@ import com.abs.oec.repository.ExceptionRepository;
 
 public class OECException extends Exception {
 	private static final long serialVersionUID = 2056817234546797042L;
-	private static final Logger LOGGER = LoggerFactory.getLogger(OECException.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(OECException.class);
 	
 
 	//=========================================================================
@@ -33,7 +33,7 @@ public class OECException extends Exception {
 	
 	private void processException(ExceptionRepository exceptionRepository, String activity, String message, Throwable cause, AuthorizationDetails authorizationDetails) {
 		String logTag = "processException() :";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		String exceptionType = null;
 		String exceptionMessage = null;
 		String exceptionCause = null;
@@ -73,9 +73,9 @@ public class OECException extends Exception {
 				EmailUtil.getInstance().notifyException(exceptionDetails.getExceptionMessage(), exceptionCause); 
 			}
 		} catch (Exception e) {
-			LOGGER.error(logTag + " Problem saving the exception details. "+e);
+			//LOGGER.error(logTag + " Problem saving the exception details. "+e);
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 	}
 	
 	//=========================================================================

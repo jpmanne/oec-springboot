@@ -41,6 +41,9 @@ public class StudentDetails {
 	@Column(name = "status", length = 1, nullable = false)
 	private String status = "1";
 
+	@Column(name = "organization_details_id", length = 20, nullable = false)
+	private Long organizationDetailsId;
+	
 	public Long getStudentDetailsId() {
 		return studentDetailsId;
 	}
@@ -89,6 +92,14 @@ public class StudentDetails {
 		this.status = status;
 	}
 	
+	public Long getOrganizationDetailsId() {
+		return organizationDetailsId;
+	}
+
+	public void setOrganizationDetailsId(Long organizationDetailsId) {
+		this.organizationDetailsId = organizationDetailsId;
+	}
+
 	public WebStudentDetails getWebStudentDetails() {
 		WebStudentDetails webStudentDetails = new WebStudentDetails();
 		webStudentDetails.setRollNo(rollNo);

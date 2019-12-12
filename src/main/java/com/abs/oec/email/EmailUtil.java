@@ -18,11 +18,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class EmailUtil {
-	private static final Logger LOGGER = LoggerFactory.getLogger(EmailUtil.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(EmailUtil.class);
 	
 	private static EmailUtil instance; 
 	
@@ -41,7 +41,7 @@ public class EmailUtil {
 
 	public boolean send(EmailDetails emailDetails) throws Exception {
 		String logTag = "send(): ";
-		LOGGER.info("entering into " + logTag);
+		//LOGGER.info("entering into " + logTag);
 		MimeMessage message = null;
 		boolean isMailSent = false;
 		try {
@@ -61,12 +61,12 @@ public class EmailUtil {
 					// send message
 					Transport.send(message);
 					isMailSent = true;
-					LOGGER.info(logTag + " message sent successfully");
+					//LOGGER.info(logTag + " message sent successfully");
 				} else {
-					LOGGER.error(logTag + " Unable to get the message object");
+					//LOGGER.error(logTag + " Unable to get the message object");
 				}
 			} else {
-				LOGGER.error(logTag + " Invalid Input");
+				//LOGGER.error(logTag + " Invalid Input");
 			}
 		} catch (MessagingException e) {
 			//new WMSException(logTag+"unable to send email, mail conctivity issue", e);
@@ -129,7 +129,7 @@ public class EmailUtil {
 	
 	public void notifyException(String subject, String messageBody) throws Exception {
 		String logTag = "notifyException(): ";
-		LOGGER.info(logTag + " START of the method");
+		//LOGGER.info(logTag + " START of the method");
 		MimeMessage message = null;
 		
 		try {
@@ -150,15 +150,15 @@ public class EmailUtil {
 					multiPart.addBodyPart(messageBodyPart);
 					message.setContent(multiPart);
 					Transport.send(message);
-					LOGGER.info("Notification of exception is successful");
+					//LOGGER.info("Notification of exception is successful");
 				} else {
-					LOGGER.error("Exception Mail Recipients loaded from property file are null");
+					//LOGGER.error("Exception Mail Recipients loaded from property file are null");
 				}
 			} 
 		} catch (Exception e) {
-			LOGGER.error(logTag + " EXCEPTION : "+e);
+			//LOGGER.error(logTag + " EXCEPTION : "+e);
 		}
-		LOGGER.info(logTag + " START of the method");
+		//LOGGER.info(logTag + " START of the method");
 	}
 	
 	// ========================================================================

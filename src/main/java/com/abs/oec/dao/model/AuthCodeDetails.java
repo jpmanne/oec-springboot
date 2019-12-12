@@ -44,6 +44,9 @@ public class AuthCodeDetails {
 	@JoinColumn(name = "user_details_id")
 	private UserDetails userDetails;
 
+	@Column(name = "ip_address", length = 20, nullable = false)
+	private String ipAddress;
+	
 	public Long getAuthcodeDetailsId() {
 		return authcodeDetailsId;
 	}
@@ -90,5 +93,13 @@ public class AuthCodeDetails {
 
 	public void setUserDetails(UserDetails userDetails) {
 		this.userDetails = userDetails;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
 	}
 }

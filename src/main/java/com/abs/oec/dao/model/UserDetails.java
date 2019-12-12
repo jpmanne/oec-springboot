@@ -71,6 +71,12 @@ public class UserDetails {
 	
 	@Column(name = "status", length = 1, nullable = false)
 	private String status = "1";
+	
+	@Column(name = "forgot_password_flag", length = 1, nullable = false)
+	private String forgotPasswordFlag = "0";
+	
+	@Column(name = "new_user_flag", length = 1, nullable = false)
+	private String newUserFlag = "0";
 
 	@Column(nullable = false, updatable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -80,6 +86,9 @@ public class UserDetails {
 	@OneToOne
 	@JoinColumn(name = "role_id")
 	private RoleDetails roleDetails;
+	
+	@Column(name = "organization_details_id", length = 20, nullable = false)
+	private Long organizationDetailsId;
 
 	public Long getUserDetailsId() {
 		return userDetailsId;
@@ -225,6 +234,30 @@ public class UserDetails {
 		this.roleDetails = roleDetails;
 	}
 	
+	public String getForgotPasswordFlag() {
+		return forgotPasswordFlag;
+	}
+
+	public void setForgotPasswordFlag(String forgotPasswordFlag) {
+		this.forgotPasswordFlag = forgotPasswordFlag;
+	}
+
+	public String getNewUserFlag() {
+		return newUserFlag;
+	}
+
+	public void setNewUserFlag(String newUserFlag) {
+		this.newUserFlag = newUserFlag;
+	}
+	
+	public Long getOrganizationDetailsId() {
+		return organizationDetailsId;
+	}
+
+	public void setOrganizationDetailsId(Long organizationDetailsId) {
+		this.organizationDetailsId = organizationDetailsId;
+	}
+
 	public WebUserDetails getWebUser() {
 		WebUserDetails webUser = new WebUserDetails();
 		webUser.setUserDetailsId(userDetailsId);

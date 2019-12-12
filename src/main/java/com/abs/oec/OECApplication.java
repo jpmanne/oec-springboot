@@ -7,29 +7,27 @@ package com.abs.oec;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class OECApplication /*extends SpringBootServletInitializer*/ {
-	private static final Logger LOGGER = LoggerFactory.getLogger(OECApplication.class);
+public class OECApplication extends SpringBootServletInitializer {
 	
 	//=========================================================================
 	
 	public static void main(String[] args) {
 		SpringApplication.run(OECApplication.class, args);
 		//LOGGER.info("Simple log statement with inputs {}, {} and {}", 1,2,3);
-		LOGGER.info("Start of the OECApplication............... ");
 	}
 	
 	//=========================================================================
 	
-	/*@Override
+	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(OECApplication.class);
-	}*/
+	}
 	
 	//=========================================================================
 }

@@ -10,8 +10,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ import com.abs.oec.response.model.WebStudentDetails;
 @RestController
 @RequestMapping(URLConstants.Student.API_BASE)
 public class StudentController extends BaseController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(StudentController.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(StudentController.class);
 	
 	@Autowired
 	StudentRepository studentRepository;
@@ -44,7 +44,7 @@ public class StudentController extends BaseController {
 	@GetMapping(URLConstants.Student.GET_STUDENTS)
 	public ResponseEntity<Response> getStudentsByCourseDetailsId(@PathVariable(value = "courseDetailsId") Long courseDetailsId, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "getStudentsByCourseDetailsId() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		List<StudentDetails> students = null; 
 		Response response = null;
@@ -65,18 +65,18 @@ public class StudentController extends BaseController {
 						response = new Response("Students not found", null);
 					}
 				} else {
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					//LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
-				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
+				//LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
 			String exceptionMessage = logTag + "Exception while getting the students by course details id, "+courseDetailsId;
-			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
+			handleException(/*LOGGER,*/ logTag, exceptionMessage, e, authorizationDetails);
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
@@ -85,7 +85,7 @@ public class StudentController extends BaseController {
 	@PostMapping(URLConstants.Student.ADD_STUDENTS)
 	public ResponseEntity<Response> addStudents(@Valid @RequestBody List<StudentDetails> students, @RequestParam("authCode") String authCode) throws OECException {
 		String logTag = "addStudents() ";
-		LOGGER.info(logTag + "START of the method");
+		//LOGGER.info(logTag + "START of the method");
 		AuthorizationDetails authorizationDetails = null;
 		Response response = null;
 		
@@ -103,18 +103,18 @@ public class StudentController extends BaseController {
 						response = new Response("Students Added Successfully", webStudents);
 					} 
 				} else {
-					LOGGER.info(logTag + "Unauthorized Access : "+authCode);
+					//LOGGER.info(logTag + "Unauthorized Access : "+authCode);
 					return new ResponseEntity<Response>(getUnAuthorizedAccessRespose(), HttpStatus.UNAUTHORIZED);
 				}
 			} else {
 				response = getInvalidAuthCodeRespose(authCode);
-				LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
+				//LOGGER.info(logTag + "Invalid AuthCode : "+authCode);
 			}
 		} catch (Exception e) {
 			String exceptionMessage = logTag + "Exception while adding the students ";
-			handleException(LOGGER, logTag, exceptionMessage, e, authorizationDetails);
+			handleException(/*LOGGER,*/ logTag, exceptionMessage, e, authorizationDetails);
 		}
-		LOGGER.info(logTag + "END of the method");
+		//LOGGER.info(logTag + "END of the method");
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 	
